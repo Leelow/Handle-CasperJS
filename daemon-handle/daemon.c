@@ -3,7 +3,11 @@
 #include <unistd.h>
 #include <signal.h>
 
+#include "daemon.h"
 #include "signalManager.h"
+
+#define PATH_PROFILES "/home/leo/casperjs_profiles/"
+
 
 HandleManager* hdl_mng;
 int volatile shmid_hdl_mng;
@@ -30,6 +34,10 @@ void handlerMessage(int sig, siginfo_t* info, void* vp) {
 }
 
 int main(int argc, char *argv[]) {
+
+	// Create necessary dir and files at the first startup if necessary
+	if (dir_exist(PATH_PROFILES) == -1)
+		mkdir(PATH_PROFILES, 0777);
 
 	// Initalize the handle manager
 	initiliazeHandleManager(hdl_mng);
