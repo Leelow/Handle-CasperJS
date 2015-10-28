@@ -16,7 +16,7 @@
 #include "share.h"
 
 /*** Buffer struct which is stored in a memory shared segment ***/
-struct Buffer {
+typedef struct Buffer {
 	
 	// Number of lines in the buffer
 	int nLine;
@@ -24,8 +24,7 @@ struct Buffer {
 	// String array containing buffer lines
 	char lines[MAX_LINE_BUFFER][MAX_STRING_LENGTH];
 	
-};
-typedef struct Buffer Buffer;
+} Buffer;
 
 /*** Get the buffer struct from a memory shared segment ***/
 // shmid : id of the shared memory segment containing the Buffer struct

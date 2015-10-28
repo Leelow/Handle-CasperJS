@@ -34,6 +34,18 @@ void handlerMessage(int sig, siginfo_t* info, void* vp) {
 
 int main(int argc, char *argv[]) {
 
+	// TEST
+	Settings s = {42, "ee"};
+	saveSettingsToFile("test.json", &s);
+	Settings s2;
+
+	loadSettingsFromFile("test.json", &s2);
+	//char* str = settingsToJson(&s);
+	//const Settings s2 = jsonToSettings(str);
+	printf("\"%i\" - \"%s\"\n", s2.id_daemon, s2.path_daemon);
+	exit(-1);
+	// FIN TEST
+
 	// Create necessary dir and files at the first startup if necessary
 	if (dir_exist(PATH_DAEMON) == -1)
 		mkdir(PATH_DAEMON, 0777);
