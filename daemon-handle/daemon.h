@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#include "share.h"
+#include "share/share.h"
 
 int dir_exist(char* path);
 int file_exist(char* path);

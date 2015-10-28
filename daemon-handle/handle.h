@@ -13,7 +13,7 @@
 #include <sys/shm.h>
 #include <semaphore.h>
 
-#include "share.h"
+#include "share/share.h"
 
 /*** Buffer struct which is stored in a memory shared segment ***/
 typedef struct Buffer {

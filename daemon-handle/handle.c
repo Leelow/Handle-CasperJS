@@ -1,5 +1,4 @@
 #include "handle.h"
-#include "signalManager.h"
 
 Buffer* buff;
 volatile int shmid;

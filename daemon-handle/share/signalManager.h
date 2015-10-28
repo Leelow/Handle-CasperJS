@@ -1,3 +1,6 @@
+#ifndef SIGNALMANAGER_H_INCLUDED
+#define SIGNALMANAGER_H_INCLUDED
+
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -10,7 +13,7 @@
 #include <sys/shm.h>
 #include <semaphore.h>
 
-#include "custom_signal.h"
+#include "customSignal.h"
 
 #define MAX_STRING_LENGTH 256
 #define MAX_HANDLED_PROGRAM 10
@@ -228,3 +231,5 @@ void dissociateHandleManager(HandleManager* hdl_mng) {
 void freeHandleManager(int shmid) {	
 	shmctl(shmid, IPC_RMID, NULL);		
 }
+
+#endif

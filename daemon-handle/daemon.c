@@ -4,7 +4,6 @@
 #include <signal.h>
 
 #include "daemon.h"
-#include "signalManager.h"
 
 HandleManager* hdl_mng;
 int volatile shmid_hdl_mng;
@@ -35,15 +34,15 @@ void handlerMessage(int sig, siginfo_t* info, void* vp) {
 int main(int argc, char *argv[]) {
 
 	// TEST
-	Settings s = {42, "ee"};
-	saveSettingsToFile("test.json", &s);
-	Settings s2;
+	// SettingsDaemon s = {42, "ee"};
+	// saveSettingsDaemonToFile("test.json", &s);
+	// SettingsDaemon s2;
 
-	loadSettingsFromFile("test.json", &s2);
-	//char* str = settingsToJson(&s);
-	//const Settings s2 = jsonToSettings(str);
-	printf("\"%i\" - \"%s\"\n", s2.id_daemon, s2.path_daemon);
-	exit(-1);
+	// loadSettingsDaemonFromFile("test.json", &s2);
+	// //char* str = settingsToJson(&s);
+	// //const Settings s2 = jsonToSettings(str);
+	// printf("\"%i\" - \"%s\"\n", s2.id_daemon, s2.path_daemon);
+	// exit(-1);
 	// FIN TEST
 
 	// Create necessary dir and files at the first startup if necessary

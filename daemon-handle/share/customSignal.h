@@ -1,3 +1,6 @@
+#ifndef CUSTOMSIGNAL_H_INCLUDED
+#define CUSTOMSIGNAL_H_INCLUDED
+
 #include <signal.h>
 #include <string.h>
 #include <unistd.h>
@@ -16,3 +19,5 @@ int signalWithInfo(int signum, InfoHandler* handler) {
 	return sigaction(signum, &action, &old_action);
 
 }
+
+#endif
