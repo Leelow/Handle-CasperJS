@@ -13,6 +13,7 @@ typedef struct {
 
    char* id;
    int timestamp_creation;
+   char* web_browser_engine;
 
 } SettingsHandle;
 
@@ -40,6 +41,7 @@ char* settingsHandleToJson(SettingsHandle* s) {
 	json_t *obj = json_object();
 	json_object_set_new(obj, "id",                 json_string(s->id));
 	json_object_set_new(obj, "timestamp_creation", json_integer(s->timestamp_creation));
+	json_object_set_new(obj, "web_browser_engine", json_string(s->web_browser_engine));
 	
 	// Convert to a json string (pretty printed)
 	return json_dumps(obj, 1);
@@ -55,17 +57,23 @@ SettingsHandle jsonToSettingsHandle(char* json_str) {
 	json_t* obj = json_loads(json_str, 0, &err);
 	json_t* j_id = json_object_get(obj, "id");
 	json_t* j_timestamp_creation = json_object_get(obj, "timestamp_creation");
+	json_t* j_web_browser_engine = json_object_get(obj, "web_browser_engine");
 	
 	// Get the fields of the object
-	const char* c_id = json_string_value(j_id);
+	const char* c_id = json_string_value(j_id);	
 	char* id = malloc(sizeof(c_id));
 	memcpy(id, c_id, sizeof(c_id));
+	
 	int timestamp_creation = json_integer_value(j_timestamp_creation);
+	
+	const char* c_web_browser_engine = json_string_value(j_web_browser_engine);	
+	char* web_browser_engine = malloc(sizeof(c_web_browser_engine));
+	memcpy(web_browser_engine, c_web_browser_engine, sizeof(c_web_browser_engine));
 	
 	// Free tje json object
 	json_decref(obj);
 	
-	SettingsHandle s = {id, timestamp_creation};
+	SettingsHandle s = {id, timestamp_creation, web_browser_engine};
 	return s;
 	
 }

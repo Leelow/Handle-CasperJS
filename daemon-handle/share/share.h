@@ -7,6 +7,8 @@
 #include "customSignal.h"
 #include "signalManager.h"
 
+#include "filesystem.h"
+
 #define MAX_STRING_LENGTH 256
 #define MAX_LINE_BUFFER 150
 #define MAX_DELAY_BETWEEN_LOGS 5

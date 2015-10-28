@@ -2,13 +2,18 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
+#include <string.h>
+#include <time.h>
 
 #include "daemon.h"
 
+// TODO :
+//
+// + Clear output error
+
 HandleManager* hdl_mng;
 int volatile shmid_hdl_mng;
-
-void create(char* name, char* file);
 
 void handlerStop(int sig, siginfo_t* info, void* vp) {
 
@@ -51,7 +56,37 @@ int main(int argc, char *argv[]) {
 	
 	if (dir_exist(PATH_PROFILES) == -1)
 		mkdir(PATH_PROFILES, 0777);
+	
+	//************************ ARG ************************//
 
+	if(argc < 2) {
+		printf("Wrong arguments.\n");
+		exit(-1);
+	}
+	
+	/*** create name file (phantomjs|slimejs) ***/
+	if(strcmp(argv[1], "create") == 0 && (argc == 4 || (argc == 5 && (strcmp(argv[4], "phantomjs") == 0 || strcmp(argv[4], "slimejs") == 0)))) {
+		
+		char* web_browser_engine = "phantomjs";
+		if(argc == 5)
+			web_browser_engine = argv[4];
+			
+		
+		char* id = create_profile(argv[2], argv[3], web_browser_engine);
+		printf("\"%s\"\n", id);
+		exit(-1);
+	}
+	
+	/*** delete id ***/
+	if(strcmp(argv[1], "delete") == 0 && argc == 3) {
+		
+		int res = delete_profile(argv[2]);
+		printf("\"%i\"\n", res);
+		exit(-1);
+	}
+	
+	exit(-1);
+	
 	// Initalize the handle manager
 	initiliazeHandleManager(hdl_mng);
 	
@@ -66,17 +101,7 @@ int main(int argc, char *argv[]) {
 	
 	// Register messages receveiver handler
 	if(signalWithInfo(SIGUSR1, (*handlerMessage)) < 0)
-		printf("Can't catch SIGUSR1.\n");	
-	
-	//************************ ARG ************************//
-
-	if(argc < 2) {
-		printf("Wrong arguments.\n");
-		exit(-1);
-	}
-	
-	if(strcmp(argv[1], "create") == 0 && argc == 4)
-		create(argv[2], argv[3]);
+		printf("Can't catch SIGUSR1.\n");
 	
 	//if(strcmp(argv[1], "start") == 0 && argc > 2 && argc <= 4)
 	
@@ -89,42 +114,5 @@ int main(int argc, char *argv[]) {
 	
 	
 	//for(;;);
-	
-}
-
-// Create a new profile with a name and a file. Return the id of the new profile
-void create(char* name, char* file) {
-	
-	// TODO : Protect name with "/"
-	
-	// TODO : Check if the name is already taken or not ???
-	
-	// Check if the given file's path is correct
-	if(file_exist(file) == -1) {
-		printf("The file \"%s\" dosen't exist.\n", file);
-		exit(-1);
-	}
-	
-	// Generate an unique id thanks to the timestamp
-	char timestamp[11];
-	sprintf(timestamp, "%d", (int) time(NULL));
-	
-	char* id = concat(name, "_");
-	strcat(id, timestamp);
-
-	// Create the dir corresponding to the new profile
-	char* profile_path = concat(PATH_PROFILES, id);
-	strcat(profile_path, "/");
-	if (dir_exist(profile_path) == -1)
-		mkdir(profile_path, 0777);
-	
-	// Get the absolute path for the copied file
-	char* file_path = concat(profile_path, file);
-	
-	// Copy the file to the profile path
-	copy_file(file_path, file);
-	
-	printf("\"%s\"\n", profile_path);
-	printf("\"%s\"\n", file_path);
 	
 }
