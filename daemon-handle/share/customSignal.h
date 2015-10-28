@@ -2,7 +2,6 @@
 #define CUSTOMSIGNAL_H_INCLUDED
 
 #include <signal.h>
-#include <string.h>
 #include <unistd.h>
 
 typedef void InfoHandler(int, siginfo_t *, void *);

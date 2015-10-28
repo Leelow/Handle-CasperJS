@@ -49,43 +49,65 @@ typedef struct MessageManager {
 
 } MessageManager;
 
-typedef struct HandleInfos {
-	
-	// Name of the handle
-	char name[MAX_STRING_LENGTH];
-	
-	// Timestamp of the creation
-	// Timestamp of the last start
-	// Timestamp of the last message
-	int last_msg;
-	
-	// Pid of the handle, -1 if it's not started
-	//int pid;
-	
-	// Message manager
-	MessageManager msg_mng;
-	
-} HandleInfos;
-
-typedef struct HandleManager { // to delete
+typedef struct HandleManager {
 	
 	// Number of handle
 	int size;
 	
-	// Array containing asso 
-	int ass[MAX_HANDLED_PROGRAM];
+	// Id of the handle
+	char id[MAX_STRING_LENGTH];
 	
-	// Array containing handles infos
-	HandleInfos infos[MAX_HANDLED_PROGRAM];
+	// Timestamp of the last message
+	int last_msg;
+	
+	// Array containing handle pid
+	int pid[MAX_HANDLED_PROGRAM];
+	
+	// Message manager
+	MessageManager msg_mng[MAX_HANDLED_PROGRAM];
 	
 	// Mutex to protect operations
 	sem_t mutex;
 	
 } HandleManager;
 
+/*** Initialize handle manager's components ***/
+// hdl_mng_out : handle manager
+void initiliazeHandleManager(HandleManager* hdl_mng_out);
+
+/*** Get the last message in the handle manager ***/
+// hdl_mng    : handle manager
+// msg_output : output message
+void getLastMessageInHandleManager(HandleManager* hdl_mng, Message* msg_output);
+
+/*** Send a message to the daemon ***/
+// daemon_pid : daemon's pid
+// msg        : message to send to the daemon
+// hdl_mng    : handle manager
+void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng);
+
+/*** Add a message to the handle manager for an handle (internal function) ***/
+// hdl_index : handle's index in the handle manager
+// hdl_mng   : handle manager
+// msg       : message to add
 void addMessage(int hdl_index, HandleManager* hdl_mng, Message msg);
+
+/*** Get the number of message in the handle manager ***/
+// hdl_mng : handle manager
+int getMessageNumberInHandleManager(HandleManager* hdl_mng);
+
+/*** Get the handle's index in the handle manager thanks to its pid (internal function) ***/
+// hdl_pid : handle's pid in the handle manager
+// hdl_mng   : handle manager
+// Note : return -1 if there is no correspondance.
 int getIndexFromPid(int hdl_pid, HandleManager* hdl_mng);
+
+/*** Get the handle's pid in the handle manager thanks to its index (internal function) ***/
+// hdl_index : handle's index in the handle manager
+// hdl_mng   : handle manager
+// Note : return -1 if there is no correspondance.
 int getPidFromIndex(int hdl_index, HandleManager* hdl_mng);
+
 
 void initiliazeHandleManager(HandleManager* hdl_mng_out) {
 	
@@ -118,12 +140,12 @@ void getLastMessageInHandleManager(HandleManager* hdl_mng, Message* msg_output) 
 	for(i = 0; i < hdl_mng->size; i++) {
 		
 		// Store the message if it's the last
-		int curr_last_timestamp = hdl_mng->infos[i].last_msg;
+		int curr_last_timestamp = hdl_mng[i].last_msg;
 		if(curr_last_timestamp >= last_timestamp) {
 			
-			int index = hdl_mng->infos[i].msg_mng.size - 1;
+			int index = hdl_mng->msg_mng[i].size - 1;
 
-			Message msg = hdl_mng->infos[i].msg_mng.messages[index];
+			Message msg = hdl_mng->msg_mng[i].messages[index];
 			memcpy(msg_output, &msg, sizeof(msg));
 			
 		}
@@ -134,22 +156,6 @@ void getLastMessageInHandleManager(HandleManager* hdl_mng, Message* msg_output) 
 	
 }
 
-int getMessageNumberInHandleManager(HandleManager* hdl_mng) {
-	
-	int count = 0;
-	
-	int i;
-	for(i = 0; i < hdl_mng->size; i++) {
-		
-		count += hdl_mng->infos[i].msg_mng.size;
-		
-	}
-	
-	return count;
-	
-}
-
-// Send a message to the daemon (must be the same thread used by the messages' receiver)
 void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng) {
 
 	sem_trywait(&(hdl_mng->mutex));
@@ -160,7 +166,7 @@ void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng) {
 	// If the handle isn't registred yet and there is possibility to register a new handle
 	if(hdl_id == -1 && hdl_mng->size < MAX_HANDLED_PROGRAM) {
 		hdl_id = hdl_mng->size;
-		hdl_mng->ass[hdl_id] = getpid();
+		hdl_mng->pid[hdl_id] = getpid();
 		hdl_mng->size++;
 	}
 	
@@ -175,40 +181,55 @@ void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng) {
 	
 }
 
-// Get the corresponding id from a pid using an handleManager. Return -1 if there is no correspondance.
+void addMessage(int hdl_index, HandleManager* hdl_mng, Message msg) {
+	
+	// Update last message timestamp
+	hdl_mng[hdl_index].last_msg = msg.timestamp;
+	
+	// Add message
+	int size = hdl_mng->msg_mng[hdl_index].size;
+	memcpy(&(hdl_mng->msg_mng[hdl_index].messages[size]), &msg, sizeof(msg));
+	hdl_mng->msg_mng[hdl_index].size++;
+
+}
+
+int getMessageNumberInHandleManager(HandleManager* hdl_mng) {
+	
+	int count = 0;
+	
+	int i;
+	for(i = 0; i < hdl_mng->size; i++) {
+		
+		count += hdl_mng->msg_mng[i].size;
+		
+	}
+	
+	return count;
+	
+}
+
 int getIndexFromPid(int hdl_pid, HandleManager* hdl_mng) {
 	
 	int i;
 	for(i = 0; i < hdl_mng->size; i++) {
-		if(hdl_mng->ass[i] == hdl_pid)
+		if(hdl_mng->pid[i] == hdl_pid)
 			return i;
 	}
 	return -1;
 	
 }
 
-// Get the corresponding pid from an id using an handleManager. Return -1 if there is no correspondace.
 int getPidFromIndex(int hdl_index, HandleManager* hdl_mng) {
 
 	if(hdl_index < hdl_mng->size)
-		return hdl_mng->ass[hdl_index];
+		return hdl_mng->pid[hdl_index];
 
 	return -1;
 	
 }
 
-// Add message in the handle message's list
-void addMessage(int hdl_index, HandleManager* hdl_mng, Message msg) {
-	
-	// Update last message timestamp
-	hdl_mng->infos[hdl_index].last_msg = msg.timestamp;
-	
-	// Add message
-	int size = hdl_mng->infos[hdl_index].msg_mng.size;
-	memcpy(&(hdl_mng->infos[hdl_index].msg_mng.messages[size]), &msg, sizeof(msg));
-	hdl_mng->infos[hdl_index].msg_mng.size++;
 
-}
+
 
 HandleManager* accessToHandleManager(int shmid) {
 	

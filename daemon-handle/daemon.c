@@ -36,6 +36,7 @@ void handlerMessage(int sig, siginfo_t* info, void* vp) {
 		
 }
 
+
 int main(int argc, char *argv[]) {
 
 	// TEST
@@ -56,16 +57,16 @@ int main(int argc, char *argv[]) {
 	
 	if (dir_exist(PATH_PROFILES) == -1)
 		mkdir(PATH_PROFILES, 0777);
-	
+
 	//************************ ARG ************************//
 
 	if(argc < 2) {
-		printf("Wrong arguments.\n");
-		exit(-1);
+		// printf("Wrong arguments.\n");
+		// exit(-1);
 	}
 	
 	/*** create name file (phantomjs|slimejs) ***/
-	if(strcmp(argv[1], "create") == 0 && (argc == 4 || (argc == 5 && (strcmp(argv[4], "phantomjs") == 0 || strcmp(argv[4], "slimejs") == 0)))) {
+	if(strcmp(argv[1], "create") == 0 && (argc == 4 || (argc == 5 && (strcmp(argv[4], "phantomjs") == 0 || strcmp(argv[4], "slimerjs") == 0)))) {
 		
 		char* web_browser_engine = "phantomjs";
 		if(argc == 5)
@@ -77,7 +78,15 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 	
-	/*** delete id ***/
+	/*** start profile_id ***/
+	if(strcmp(argv[1], "start") == 0 && argc == 3) {
+		
+		int res = start_profile(argv[2]);
+		printf("\"%i\"\n", res);
+		exit(-1);
+	}
+	
+	/*** delete profile_id ***/
 	if(strcmp(argv[1], "delete") == 0 && argc == 3) {
 		
 		int res = delete_profile(argv[2]);
@@ -85,10 +94,19 @@ int main(int argc, char *argv[]) {
 		exit(-1);
 	}
 	
-	exit(-1);
+	/*** infos profile_id ***/
+	if(strcmp(argv[1], "infos") == 0 && argc == 3) {
+		
+		char* res = infos_profile(argv[2]);
+		printf("\"%s\"\n", res);
+		exit(-1);
+	}
 	
+	//exit(-1);
+
 	// Initalize the handle manager
 	initiliazeHandleManager(hdl_mng);
+	
 	
 	// Create the shared memory segment containing the handle manager
 	shmid_hdl_mng = shmget(IPC_PRIVATE, sizeof(*hdl_mng), IPC_CREAT | 0777);
@@ -113,6 +131,6 @@ int main(int argc, char *argv[]) {
 	//}
 	
 	
-	//for(;;);
+	for(;;);
 	
 }

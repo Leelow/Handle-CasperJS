@@ -35,6 +35,12 @@ int saveSettingsHandleToFile(char* path, SettingsHandle* s);
 // s    : pointer to the dest SettingsHandle
 int loadSettingsHandleFromFile(char* path, SettingsHandle* s);
 
+/*** Load a SettingsHandle from a profile id ***/
+// profile_id : profile id to load
+// s          : pointer to the dest SettingsHandle
+int loadSettingsHandleFromProfileId(char* profile_id, SettingsHandle* s);
+
+
 char* settingsHandleToJson(SettingsHandle* s) {
 	
 	// Create json object
@@ -67,8 +73,8 @@ SettingsHandle jsonToSettingsHandle(char* json_str) {
 	int timestamp_creation = json_integer_value(j_timestamp_creation);
 	
 	const char* c_web_browser_engine = json_string_value(j_web_browser_engine);	
-	char* web_browser_engine = malloc(sizeof(c_web_browser_engine));
-	memcpy(web_browser_engine, c_web_browser_engine, sizeof(c_web_browser_engine));
+	char* web_browser_engine = malloc(sizeof(c_web_browser_engine) + 1);
+	memcpy(web_browser_engine, c_web_browser_engine, sizeof(c_web_browser_engine) + 1);
 	
 	// Free tje json object
 	json_decref(obj);
@@ -101,6 +107,17 @@ int loadSettingsHandleFromFile(char* path, SettingsHandle* s) {
 	
 	SettingsHandle s_file = jsonToSettingsHandle(json_str);
 	memcpy(s, &s_file, sizeof(s_file));
+	
+}
+
+int loadSettingsHandleFromProfileId(char* profile_id, SettingsHandle* s) {
+	
+	// Get the handle's profile settings file path
+	char* settings_file = concat(PATH_PROFILES, profile_id);
+	settings_file = concat(settings_file, "/");
+	settings_file = concat(settings_file, PROFILE_SETTINGS_FILE);
+	
+	return loadSettingsHandleFromFile(settings_file, s);
 	
 }
 

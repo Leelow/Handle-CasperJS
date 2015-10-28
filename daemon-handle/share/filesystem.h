@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <fts.h>
+#include <errno.h>
 
 int dir_exist(char* path);
 int file_exist(char* path);

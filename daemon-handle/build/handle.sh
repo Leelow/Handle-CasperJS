@@ -1,3 +1,3 @@
 #!/bin/sh
 
-./handle $1 $2 casperjs test.js logs.txt
+./build/handle $1 $2 casperjs ./build/test.js logs.txt

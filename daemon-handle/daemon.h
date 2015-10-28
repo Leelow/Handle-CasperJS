@@ -6,5 +6,6 @@
 /*** Commands inclusion ***/
 #include "daemon/create_profile.h"
 #include "daemon/delete_profile.h"
+#include "daemon/infos_profile.h"
 
 #endif

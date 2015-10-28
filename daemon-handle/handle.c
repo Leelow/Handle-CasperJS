@@ -69,11 +69,14 @@ int main(int argc, char * argv[]) {
 		exit(-1);
 	}
 
-	// ARG daemon_id shmid_hdl_mng program arg1 output_file
-	if(argc != 6) {
-		printf("Usage: %s daemon_pid shmid_hdl_mng program arg1 output_file\n", argv[0]);
+	// ARG daemon_id shmid_hdl_mng program arg1 output_file ///////////////
+	// ARG daemon_id shmid_hdl_mng profile_id
+	if(argc != 4) { //if(argc != 6) {
+		printf("Usage: %s daemon_pid shmid_hdl_mng profile_id\n", argv[0]); //printf("Usage: %s daemon_pid shmid_hdl_mng program arg1 output_file\n", argv[0]);
 		exit(-1);
 	}
+	
+	// TODO : check if the profile id corresponds to a real profile id
 	
 	// Get the id of the daemon process to send signal
 	daemon_pid = atoi(argv[1]);
@@ -81,21 +84,21 @@ int main(int argc, char * argv[]) {
 	// Get the if of the shared_segment which is used to communicate with the daemon
 	shmid_hdl_mng = atoi(argv[2]);
 	
-	// Get the absolute path of the program to handle
-	char* program = argv[3];
+	// Get the settings of the handle's profile to obtain the web webrowser engine
+	SettingsHandle s;
+	loadSettingsHandleFromProfileId(argv[3], &s);
 	
-	// Get the arg1
-	char* arg1 = argv[4];
-	
-	// Get the path of the output file
-	strcpy(output_file, argv[5]);
+	char* script_path = concat(PATH_PROFILES, argv[3]);
+	script_path = concat(script_path, "/");
+	script_path = concat(script_path, PROFILE_SCRIPT_FILE);
 
-	// Generate command
+
+	// // Generate command
 	char command[MAX_STRING_LENGTH];
-	strcpy(command, "\"");
-	strcat(command, program);
-	strcat(command, "\" \"");
-	strcat(command, arg1);
+	strcpy(command, "casperjs --engine=");
+	strcat(command, s.web_browser_engine);
+	strcat(command, " \"");
+	strcat(command, script_path);
 	strcat(command, "\"");
 
 	// <--- NON GENERIC CODE ---> //
