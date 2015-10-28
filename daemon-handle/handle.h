@@ -1,20 +1,19 @@
+#ifndef HANDLE_H_INCLUDED
+#define HANDLE_H_INCLUDED
+
 #include <errno.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <signal.h>
-#include <string.h>
-#include <time.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <semaphore.h>
 
-#define MAX_STRING_LENGTH 256
-#define MAX_LINE_BUFFER 150
-#define MAX_DELAY_BETWEEN_LOGS 5
-
-#define VERSION "0.1"
+#include "share.h"
 
 /*** Buffer struct which is stored in a memory shared segment ***/
 struct Buffer {
@@ -143,3 +142,5 @@ char* getSystemDate() {
 		return date;
 	}
 }
+
+#endif
