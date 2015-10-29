@@ -63,7 +63,15 @@ void signalManager(char line[MAX_STRING_LENGTH]) {
 void handlerStop(int sig, siginfo_t* info, void* vp) {
 
 	//printf("int code: %i\nsender pid: %i\n", info->si_signo, info->si_pid);
-
+	
+	HandleManager* hdl_mng = accessToHandleManager(shmid_hdl_mng);
+	
+	// TODO : Signal to the daemon that the handle is stopped 	
+	// Signal in the handle manager that the handle is unactive
+	handleIsStopped(getpid(), hdl_mng);
+	
+	dissociateHandleManager(hdl_mng);
+	
 	// Save the lines from the buffer
 	saveBuffer(output_file, shmid, &mutex);
 
@@ -161,10 +169,6 @@ int main(int argc, char * argv[]) {
 	// Thread to periodically save lines
 	if(pidChild == 0) {
 	
-		// Register stop handler once
-		if(signalWithInfo(SIGINT, (*handlerStop)) < 0)
-			printf("Can't catch SIGINT.\n");
-	
 		while(1) {
 
 			sleep(MAX_DELAY_BETWEEN_LOGS);
@@ -177,6 +181,10 @@ int main(int argc, char * argv[]) {
 	}
 	// Thread to save automatically when a number of bufferized lines is reached
 	else {
+	
+		// Register stop handler once (must be in the parent process /!\)
+		if(signalWithInfo(SIGINT, (*handlerStop)) < 0)
+			printf("Can't catch SIGINT.\n");
 	
 		// Indicates to the signalManager that the program starts
 		signalManager("START");

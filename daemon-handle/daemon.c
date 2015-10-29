@@ -12,30 +12,8 @@
 //
 // + Clear output error
 
-void handlerStop(int sig, siginfo_t* info, void* vp) {
-
-	// Say the shared memory segment need to be destroyed
-	//freeHandleManager(shmid_hdl_mng);	
-	
-	exit(0);
-	
-}
-
-
-
-
+ 
 int main(int argc, char *argv[]) {
-
-	// TEST
-
-	// int timestamp = (int)time(NULL);
-	// MessageType type = START;
-	// Message msg = {getpid(), timestamp, type, "\"Start !\""};
-	
-	// printf("%s\n", messageToJson(&msg));
-	// exit(-1);
-	
-	// FIN TEST
 	
 	// Create necessary dir and files at the first startup if necessary
 	if (dir_exist(PATH_DAEMON) == -1)
@@ -102,33 +80,14 @@ int main(int argc, char *argv[]) {
 			exit(-1);
 		}
 		
+		/*** status ***/
+		if(strcmp(argv[1], "status") == 0 && argc == 2) {
+			
+			char* res = status_daemon();
+			printf("\"%s\"\n", res);
+			exit(-1);
+		}
+		
 	}
-	
-	// exit(-1);
-	// printf("eeeee");
-	// exit(-1);
-	
-	
-
-	
-	// Register stop handler
-	if(signalWithInfo(SIGINT, (*handlerStop)) < 0)
-		printf("Can't catch SIGINT.\n");
-	
-
-	
-
-	
-	//if(strcmp(argv[1], "start") == 0 && argc > 2 && argc <= 4)
-	
-	
-	// ARG daemon_id shmid_hdl_mng program arg1 output_file
-	//if(argc != 6) {
-	//	printf("Usage: %s daemon_pid shmid_hdl_mng program arg1 output_file\n", argv[0]);
-	//	exit(-1);
-	//}
-	
-	
-	// for(;;);
 	
 }

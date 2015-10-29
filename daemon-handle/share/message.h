@@ -9,15 +9,6 @@
 /*                                                                 */
 /*******************************************************************/
 
-
-/*** Convert a messageType into a string ***/
-// mt : pointer to the messageType to convert
-char* messageTypeToString(MessageType* mt);
-
-/*** Convert a message into a json string ***/
-// m : message to convert
-char* messageToJson(Message* m)
-
 typedef enum MessageType {
 	
 	ERROR_FILE, ERROR_SYNTAX, INFOS, DEBUG, ERROR, START, END, EMPTY
@@ -39,6 +30,14 @@ typedef struct Message {
 	char text[MAX_STRING_LENGTH];
 	
 } Message;
+
+/*** Convert a messageType into a string ***/
+// mt : pointer to the messageType to convert
+char* messageTypeToString(MessageType* mt);
+
+/*** Convert a message into a json string ***/
+// m : message to convert
+char* messageToJson(Message* m);
 
 char* messageTypeToString(MessageType* mt) {
 	

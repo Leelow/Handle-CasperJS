@@ -41,10 +41,13 @@ typedef struct HandleManager {
 	// Timestamp of the last message
 	int last_msg;
 	
-	// Array containing handle's pid
+	// Array containing handles state (active = 1, unactive = -1);
+	int state[MAX_HANDLED_PROGRAM];
+	
+	// Array containing handles pid
 	int pid[MAX_HANDLED_PROGRAM];
 	
-	// Array containing handle's profile id
+	// Array containing handles profile id
 	char profile_id[MAX_HANDLED_PROGRAM][MAX_STRING_LENGTH];
 	
 	// Message manager
@@ -101,6 +104,8 @@ int getIndexFromProfileId(char* hdl_profile_id, HandleManager* hdl_mng);
 int getPidFromIndex(int hdl_index, HandleManager* hdl_mng);
 
 
+char* printHandleManagerInfos(HandleManager* hdl_mng);
+
 void initiliazeHandleManager(HandleManager* hdl_mng_out) {
 	
 	HandleManager hdl_mng;
@@ -113,8 +118,6 @@ void initiliazeHandleManager(HandleManager* hdl_mng_out) {
 	hdl_mng_out = &hdl_mng;
 	
 }
-
-
 
 void getLastMessageInHandleManager(HandleManager* hdl_mng, int handle_pid, Message* msg_output) {
 
@@ -151,6 +154,7 @@ void sendMessageToDaemon(int daemon_pid, Message msg, char* profile_id, HandleMa
 		hdl_id = hdl_mng->size;
 		hdl_mng->pid[hdl_id] = getpid();
 		strcpy(hdl_mng->profile_id[hdl_id], profile_id);
+		hdl_mng->state[hdl_id] = 1;
 		sem_init(&(hdl_mng->mutex[hdl_id]), 1, 1);
 		hdl_mng->size++;
 	
@@ -228,7 +232,72 @@ int getPidFromIndex(int hdl_index, HandleManager* hdl_mng) {
 	
 }
 
+/// TEMP
 
+char* printHandleManagerInfos(HandleManager* hdl_mng) {
+
+	// Create json object for the handle manager
+	json_t* obj_hdl_mng = json_object();
+	json_object_set_new(obj_hdl_mng, "last_msg", json_integer(hdl_mng->last_msg)); // useful ?
+		
+	json_t* obj_array = json_array();
+		
+	// Create json object for arrays
+	int size = 0;
+	int i;
+	for(i = 0; i < hdl_mng->size; i++) {
+		
+		// Parse only active handle
+		if(hdl_mng->state[i] > 0) {
+			
+			size++;
+		
+			json_t *obj_data = json_object();
+			//json_object_set_new(obj_data, "state",      json_integer(hdl_mng->state[i]));
+			json_object_set_new(obj_data, "pid",        json_integer(hdl_mng->pid[i]));
+			json_object_set_new(obj_data, "profile_id", json_string(hdl_mng->profile_id[i]));
+			
+			// Parse MessageManager
+			json_t* obj_array_mm = json_array();
+			
+			int j;
+			for(j = 0; j < hdl_mng->msg_mng[i].size; j++) {
+				
+				json_t *obj_data_mm = json_object();
+				json_object_set_new(obj_data_mm, "sender_pid", json_integer(hdl_mng->msg_mng[i].messages[j].sender_pid));
+				json_object_set_new(obj_data_mm, "timestamp",  json_integer(hdl_mng->msg_mng[i].messages[j].timestamp));
+				json_object_set_new(obj_data_mm, "type",       json_string(messageTypeToString(&(hdl_mng->msg_mng[i].messages[j].type))));
+				json_object_set_new(obj_data_mm, "text",       json_string(hdl_mng->msg_mng[i].messages[j].text));
+				
+				json_array_append(obj_array_mm, obj_data_mm);
+				
+			}
+			
+			json_object_set_new(obj_data, "message", obj_array_mm);
+			
+			json_array_append(obj_array, obj_data);
+		
+		}
+		
+	}
+		
+	json_object_set_new(obj_hdl_mng, "size", json_integer(size));
+		
+	json_object_set_new(obj_hdl_mng, "handle", obj_array);
+	
+	// Convert to a json string (pretty printed)
+	return json_dumps(obj_hdl_mng, 1);
+
+}
+
+void handleIsStopped(int hdl_pid, HandleManager* hdl_mng) {
+	
+	int index = getIndexFromPid(hdl_pid, hdl_mng);*
+	hdl_mng->state[index] = -1;*
+	
+}
+
+/// END TEMP
 
 HandleManager* accessToHandleManager(int shmid) {
 	
