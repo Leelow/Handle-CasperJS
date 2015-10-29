@@ -15,6 +15,8 @@
 
 #define VERSION "0.1"
 
+#define SHARED_MEMORY_KEY 730
+
 #include "filesystem.h"
 
 #include "settingsDaemon.h"

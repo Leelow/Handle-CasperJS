@@ -14,30 +14,11 @@
 #include <semaphore.h>
 
 #include "customSignal.h"
+#include "message.h"
 
-#define MAX_STRING_LENGTH 256
+// #define MAX_STRING_LENGTH 256
 #define MAX_HANDLED_PROGRAM 10
 #define MAX_HANDLED_PROGRAM_MESSAGES 10
-
-typedef enum MessageType {
-	ERROR_FILE, ERROR_SYNTAX, INFOS, DEBUG, ERROR, END, EMPTY
-} MessageType;
-
-typedef struct Message {
-	
-	// Id of the message's sender
-	int sender_pid;
-	
-	// Timestamp of the message
-	int timestamp;
-	
-	// Type of the message
-	MessageType type;
-	
-	// Plain text of the message
-	char text[MAX_STRING_LENGTH];
-	
-} Message;
 
 typedef struct MessageManager {
 
@@ -60,14 +41,17 @@ typedef struct HandleManager {
 	// Timestamp of the last message
 	int last_msg;
 	
-	// Array containing handle pid
+	// Array containing handle's pid
 	int pid[MAX_HANDLED_PROGRAM];
+	
+	// Array containing handle's profile id
+	char profile_id[MAX_HANDLED_PROGRAM][MAX_STRING_LENGTH];
 	
 	// Message manager
 	MessageManager msg_mng[MAX_HANDLED_PROGRAM];
 	
 	// Mutex to protect operations
-	sem_t mutex;
+	sem_t mutex[MAX_HANDLED_PROGRAM];
 	
 } HandleManager;
 
@@ -77,14 +61,16 @@ void initiliazeHandleManager(HandleManager* hdl_mng_out);
 
 /*** Get the last message in the handle manager ***/
 // hdl_mng    : handle manager
+// handle_pid : handle's pid
 // msg_output : output message
-void getLastMessageInHandleManager(HandleManager* hdl_mng, Message* msg_output);
+void getLastMessageInHandleManager(HandleManager* hdl_mng, int handle_pid, Message* msg_output);
 
 /*** Send a message to the daemon ***/
 // daemon_pid : daemon's pid
 // msg        : message to send to the daemon
+// profile_id : handle's profile id
 // hdl_mng    : handle manager
-void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng);
+void sendMessageToDaemon(int daemon_pid, Message msg, char* profile_id, HandleManager* hdl_mng);
 
 /*** Add a message to the handle manager for an handle (internal function) ***/
 // hdl_index : handle's index in the handle manager
@@ -98,14 +84,20 @@ int getMessageNumberInHandleManager(HandleManager* hdl_mng);
 
 /*** Get the handle's index in the handle manager thanks to its pid (internal function) ***/
 // hdl_pid : handle's pid in the handle manager
-// hdl_mng   : handle manager
-// Note : return -1 if there is no correspondance.
+// hdl_mng : handle manager
+// Note    : return -1 if there is no correspondance.
 int getIndexFromPid(int hdl_pid, HandleManager* hdl_mng);
+
+/*** Get the handle's index in the handle manager thanks to its profile_id (internal function) ***/
+// hdl_profile_id : handle's profile id in the handle manager
+// hdl_mng        : handle manager
+// Note           : return -1 if there is no correspondance.
+int getIndexFromProfileId(char* hdl_profile_id, HandleManager* hdl_mng);
 
 /*** Get the handle's pid in the handle manager thanks to its index (internal function) ***/
 // hdl_index : handle's index in the handle manager
 // hdl_mng   : handle manager
-// Note : return -1 if there is no correspondance.
+// Note      : return -1 if there is no correspondance.
 int getPidFromIndex(int hdl_index, HandleManager* hdl_mng);
 
 
@@ -113,16 +105,20 @@ void initiliazeHandleManager(HandleManager* hdl_mng_out) {
 	
 	HandleManager hdl_mng;
 	
+	hdl_mng.size = 0;
+	
 	// Initialize the mutex (prepare it to be in a memory shared segment)
-	sem_init(&hdl_mng.mutex, 1, 1);
+	//sem_init(&hdl_mng.mutex, 1, 1);
 	
 	hdl_mng_out = &hdl_mng;
 	
 }
 
-void getLastMessageInHandleManager(HandleManager* hdl_mng, Message* msg_output) {
 
-	// If there is no message
+
+void getLastMessageInHandleManager(HandleManager* hdl_mng, int handle_pid, Message* msg_output) {
+
+	// If there is no handle, there is no message (TO REMOVE ?)
 	if(hdl_mng->size == 0) {
 		
 		MessageType t = EMPTY;
@@ -132,43 +128,35 @@ void getLastMessageInHandleManager(HandleManager* hdl_mng, Message* msg_output) 
 
 	}
 
-	sem_wait(&(hdl_mng->mutex));
-	
-	int last_timestamp = -1;
-	
-	int i;
-	for(i = 0; i < hdl_mng->size; i++) {
-		
-		// Store the message if it's the last
-		int curr_last_timestamp = hdl_mng[i].last_msg;
-		if(curr_last_timestamp >= last_timestamp) {
-			
-			int index = hdl_mng->msg_mng[i].size - 1;
+	int index_handle = getIndexFromPid(handle_pid, hdl_mng);
 
-			Message msg = hdl_mng->msg_mng[i].messages[index];
-			memcpy(msg_output, &msg, sizeof(msg));
-			
-		}
-		
-	}
+	sem_wait(&(hdl_mng->mutex[index_handle]));
+	
+	int index_msg = hdl_mng->msg_mng[index_handle].size - 1;
+	Message msg = hdl_mng->msg_mng[index_handle].messages[index_msg];
+	memcpy(msg_output, &msg, sizeof(msg));
 
-	sem_post(&(hdl_mng->mutex));
+	sem_post(&(hdl_mng->mutex[index_handle]));
 	
 }
 
-void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng) {
+void sendMessageToDaemon(int daemon_pid, Message msg, char* profile_id, HandleManager* hdl_mng) {
 
-	sem_trywait(&(hdl_mng->mutex));
-	
 	// Get the corresponding id
 	int hdl_id = getIndexFromPid(getpid(), hdl_mng);
 	
 	// If the handle isn't registred yet and there is possibility to register a new handle
 	if(hdl_id == -1 && hdl_mng->size < MAX_HANDLED_PROGRAM) {
+		
 		hdl_id = hdl_mng->size;
 		hdl_mng->pid[hdl_id] = getpid();
+		strcpy(hdl_mng->profile_id[hdl_id], profile_id);
+		sem_init(&(hdl_mng->mutex[hdl_id]), 1, 1);
 		hdl_mng->size++;
+	
 	}
+	
+	sem_trywait(&(hdl_mng->mutex[hdl_id]));
 	
 	// Add message in the handle message's list
 	addMessage(hdl_id, hdl_mng, msg);
@@ -177,7 +165,7 @@ void sendMessageToDaemon(int daemon_pid, Message msg, HandleManager* hdl_mng) {
 	kill(daemon_pid, SIGUSR1);
 	
 	// Indicate the message has been sent
-	sem_post(&(hdl_mng->mutex));
+	sem_post(&(hdl_mng->mutex[hdl_id]));
 	
 }
 
@@ -219,6 +207,18 @@ int getIndexFromPid(int hdl_pid, HandleManager* hdl_mng) {
 	
 }
 
+int getIndexFromProfileId(char* hdl_profile_id, HandleManager* hdl_mng) {
+	
+	int i;
+	for(i = 0; i < hdl_mng->size; i++) {
+		printf("%i : %s\n", i, hdl_mng->profile_id[i]);
+		if(strcmp(hdl_mng->profile_id[i], hdl_profile_id) == 0)
+			return i;
+	}
+	return -1;
+	
+}
+
 int getPidFromIndex(int hdl_index, HandleManager* hdl_mng) {
 
 	if(hdl_index < hdl_mng->size)
@@ -227,7 +227,6 @@ int getPidFromIndex(int hdl_index, HandleManager* hdl_mng) {
 	return -1;
 	
 }
-
 
 
 
