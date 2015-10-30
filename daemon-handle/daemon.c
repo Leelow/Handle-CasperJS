@@ -57,10 +57,14 @@ int main(int argc, char *argv[]) {
 			exit(-1);
 		}
 		
+		/*** start profile_id (--follow) ***/
+		if(strcmp(argv[1], "stop") == 0 && argc == 3)				
+			stop_profile(argv[2]);			
+		
 		/*** follow profile_id ***/
 		if(strcmp(argv[1], "follow") == 0 && argc == 3) {
 			
-			int res = follow_profile(argv[2]);
+			int res = follow_profile(argv[2], 1);
 			exit(-1);
 		}
 

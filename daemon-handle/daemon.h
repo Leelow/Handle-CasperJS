@@ -12,6 +12,7 @@ int volatile shmid_hdl_mng;
 #include "daemon/delete_profile.h"
 #include "daemon/infos_profile.h"
 #include "daemon/start_profile.h"
+#include "daemon/stop_profile.h"
 #include "daemon/follow_profile.h"
 #include "daemon/status_daemon.h"
 

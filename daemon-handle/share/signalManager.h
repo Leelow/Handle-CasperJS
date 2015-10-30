@@ -44,6 +44,9 @@ typedef struct HandleManager {
 	// Array containing handles state (active = 1, unactive = -1);
 	int state[MAX_HANDLED_PROGRAM];
 	
+	// Array containing daemon's pid
+	int daemon_pid[MAX_HANDLED_PROGRAM];
+	
 	// Array containing handles pid
 	int pid[MAX_HANDLED_PROGRAM];
 	
@@ -159,9 +162,9 @@ void sendMessageToDaemon(int daemon_pid, Message msg, char* profile_id, HandleMa
 		hdl_mng->size++;
 	
 	}
-	
+	//printf("send1\n");
 	sem_trywait(&(hdl_mng->mutex[hdl_id]));
-	
+	//printf("send2\n");
 	// Add message in the handle message's list
 	addMessage(hdl_id, hdl_mng, msg);
 	
@@ -215,7 +218,7 @@ int getIndexFromProfileId(char* hdl_profile_id, HandleManager* hdl_mng) {
 	
 	int i;
 	for(i = 0; i < hdl_mng->size; i++) {
-		printf("%i : %s\n", i, hdl_mng->profile_id[i]);
+		//printf("%i : %s\n", i, hdl_mng->profile_id[i]);
 		if(strcmp(hdl_mng->profile_id[i], hdl_profile_id) == 0)
 			return i;
 	}
@@ -233,6 +236,16 @@ int getPidFromIndex(int hdl_index, HandleManager* hdl_mng) {
 }
 
 /// TEMP
+
+int getHandlePidFromProfileId(char* hdl_profile_id, HandleManager* hdl_mng) {
+	
+	int index = getIndexFromProfileId(hdl_profile_id, hdl_mng);
+	if(index > -1)
+		return getPidFromIndex(index, hdl_mng);
+
+	return -1;
+	
+}
 
 char* printHandleManagerInfos(HandleManager* hdl_mng) {
 
@@ -254,6 +267,7 @@ char* printHandleManagerInfos(HandleManager* hdl_mng) {
 		
 			json_t *obj_data = json_object();
 			//json_object_set_new(obj_data, "state",      json_integer(hdl_mng->state[i]));
+			json_object_set_new(obj_data, "daemon_pid", json_integer(hdl_mng->daemon_pid[i]));
 			json_object_set_new(obj_data, "pid",        json_integer(hdl_mng->pid[i]));
 			json_object_set_new(obj_data, "profile_id", json_string(hdl_mng->profile_id[i]));
 			
@@ -290,10 +304,58 @@ char* printHandleManagerInfos(HandleManager* hdl_mng) {
 
 }
 
+int getFollowingDaemonPid(int hdl_pid, HandleManager* hdl_mng) {
+	
+	int index = getIndexFromPid(hdl_pid, hdl_mng);
+	
+	if(index > -1)
+		return hdl_mng->daemon_pid[index];
+	
+	return -1;
+	
+}
+
+// Update the following daemon. If one already exists, stop it before.
+void updateFollowingDaemonPid(int hdl_pid, char* profile_id, int _daemon_pid, HandleManager* hdl_mng) {
+	
+	int index = getIndexFromPid(hdl_pid, hdl_mng);
+	
+	// If the handle isn't registred yet and there is possibility to register a new handle
+	if(index == -1 && hdl_mng->size < MAX_HANDLED_PROGRAM) {
+		
+		index = hdl_mng->size;
+		hdl_mng->pid[index] = getpid();
+		strcpy(hdl_mng->profile_id[index], profile_id);
+		hdl_mng->state[index] = 1;
+		hdl_mng->daemon_pid[index] = -1;
+		sem_init(&(hdl_mng->mutex[index]), 1, 1);
+		hdl_mng->size++;
+	
+	}
+	
+	int following_daemon_pid = hdl_mng->daemon_pid[index];
+	
+	// If it exists, stop it
+	if(following_daemon_pid > 0)
+		kill(following_daemon_pid, SIGUSR2);	
+
+	// Update the following daemon
+	hdl_mng->daemon_pid[index] = _daemon_pid;
+	
+}
+
+void stopSendSignalToFollowingDaemon(int hdl_pid, HandleManager* hdl_mng) {
+
+	int index = getIndexFromPid(hdl_pid, hdl_mng);
+	if(index > -1)
+		hdl_mng->daemon_pid[index] = -1;
+
+}
+
 void handleIsStopped(int hdl_pid, HandleManager* hdl_mng) {
 	
-	int index = getIndexFromPid(hdl_pid, hdl_mng);*
-	hdl_mng->state[index] = -1;*
+	int index = getIndexFromPid(hdl_pid, hdl_mng);
+	hdl_mng->state[index] = -1;
 	
 }
 

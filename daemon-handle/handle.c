@@ -14,45 +14,59 @@ int startsWith(const char *str, const char *pre)
     return strncmp(str, pre, strlen(pre));
 }
 
+void createMessage(Message* msg, char* text, MessageType type) {
+	
+	int timestamp = (int) time(NULL);
+	Message msg_to_cpy = {getpid(), timestamp, type, ""};
+	strcpy(msg_to_cpy.text, text);
+	memcpy(msg, &msg_to_cpy, sizeof(msg_to_cpy));
+	
+}
+
 void signalManager(char line[MAX_STRING_LENGTH]) {
 
 	HandleManager* hdl_mng = accessToHandleManager(shmid_hdl_mng);
 
-	if(startsWith(line, "Unable to open file") == 0) {
-		printf("[SIGNAL SENDER] Script file can't be finded.\n");
-		
-	} else if(startsWith(line, "SyntaxError") == 0) {
-		printf("[SIGNAL SENDER] Syntax error.\n");
+	// Get the following daemon pid to know if we have to send a message
+	int following_daemon_pid = getFollowingDaemonPid(getpid(), hdl_mng);
 
-	} else if(startsWith(line, "[INFOS]") == 0) {
-		printf("[INFOS] Debug.\n");
+	if(following_daemon_pid > 0) {
 		
-	} else if(startsWith(line, "[DEBUG]") == 0) {
-		printf("[SIGNAL SENDER] Debug.\n");
-
-		int timestamp = (int)time(NULL);
-		MessageType type = DEBUG;
-		Message msg = {getpid(), timestamp, type, "debug"};
-		sendMessageToDaemon(daemon_pid, msg, profile_id, hdl_mng);
-		
-	} else if(startsWith(line, "[ERROR]") == 0) {
-		printf("[SIGNAL SENDER] Error.\n");
+		Message msg = {0};
 	
-	} else if(strcmp(line, "START") == 0) {
-		printf("[SIGNAL SENDER] Program starts.\n");
+		if(startsWith(line, "Unable to open file") == 0) {
+			printf("[SIGNAL SENDER] Script file can't be finded.\n");
+			
+		} else if(startsWith(line, "SyntaxError") == 0) {
+			printf("[SIGNAL SENDER] Syntax error.\n");
 
-		int timestamp = (int)time(NULL);
-		MessageType type = START;
-		Message msg = {getpid(), timestamp, type, "\"Start !\""};
-		sendMessageToDaemon(daemon_pid, msg, profile_id, hdl_mng);
-	
-	} else if(strcmp(line, "END") == 0) {
-		printf("[SIGNAL SENDER] Program ends.\n");
+		} else if(startsWith(line, "[INFOS]") == 0) {
+			printf("[INFOS] Debug.\n");
+			
+		} else if(startsWith(line, "[DEBUG]") == 0) {
+			printf("[SIGNAL SENDER] Debug.\n");
+			
+			createMessage(&msg, "Debug message ! ", DEBUG);
+			
+		} else if(startsWith(line, "[ERROR]") == 0) {
+			printf("[SIGNAL SENDER] Error.\n");
 		
-		int timestamp = (int)time(NULL);
-		MessageType type = END;
-		Message msg = {getpid(), timestamp, type, "\"End !\""};
-		sendMessageToDaemon(daemon_pid, msg, profile_id, hdl_mng);
+		} else if(strcmp(line, "START") == 0) {
+			printf("[SIGNAL SENDER] Program starts.\n");
+
+			createMessage(&msg, "Start message ! ", START);
+			
+		
+		} else if(strcmp(line, "END") == 0) {
+			printf("[SIGNAL SENDER] Program ends.\n");
+			
+			createMessage(&msg, "End message ! ", END);
+
+		}
+		
+		// If there is a message to send
+		if(msg.sender_pid > 0)
+			sendMessageToDaemon(following_daemon_pid, msg, profile_id, hdl_mng);
 
 	}
 	
@@ -65,10 +79,14 @@ void handlerStop(int sig, siginfo_t* info, void* vp) {
 	//printf("int code: %i\nsender pid: %i\n", info->si_signo, info->si_pid);
 	
 	HandleManager* hdl_mng = accessToHandleManager(shmid_hdl_mng);
-	
-	// TODO : Signal to the daemon that the handle is stopped 	
+		
 	// Signal in the handle manager that the handle is unactive
 	handleIsStopped(getpid(), hdl_mng);
+	
+	// Signal to the following daemon to stop
+	int following_daemon_pid = getFollowingDaemonPid(getpid(), hdl_mng);
+	if(following_daemon_pid > 0)
+		kill(following_daemon_pid, SIGINT);
 	
 	dissociateHandleManager(hdl_mng);
 	
@@ -105,7 +123,7 @@ int main(int argc, char * argv[]) {
 		exit(-1);
 	}
 
-	// ARG daemon_id shmid_hdl_mng profile_id
+	// ARG daemon_pid shmid_hdl_mng profile_id
 	if(argc != 4) {
 		printf("Usage: %s daemon_pid shmid_hdl_mng profile_id\n", argv[0]);
 		exit(-1);
@@ -126,6 +144,11 @@ int main(int argc, char * argv[]) {
 	// Get the handle's profile id
 	strcpy(profile_id, argv[3]);
 
+	// Update the daemon pid in the handle manager
+	HandleManager* hdl_mng = accessToHandleManager(shmid_hdl_mng);
+	updateFollowingDaemonPid(getpid(), profile_id, daemon_pid, hdl_mng);
+	dissociateHandleManager(hdl_mng);
+	
 	// Get the settings of the handle's profile to obtain the web webrowser engine
 	SettingsHandle s;
 	loadSettingsHandleFromProfileId(profile_id, &s);
