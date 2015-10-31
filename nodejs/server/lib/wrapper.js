@@ -13,18 +13,18 @@ function Wrapper() {
  * Initialise with daemonPath parameter
  * @param daemonPath
  * @returns {Wrapper}
- * @private
+ * @public
  */
 Wrapper.prototype._init = function(daemonPath) {
     this.daemonPath = daemonPath;
     return this;
-}
+};
 
 /**
  * Get the status of the daemon
  * @public
  */
-Wrapper.prototype.status = function () {
+exports.status = Wrapper.prototype.status = function () {
 
     exec(this.daemonPath + ' status', function(error, stdout, stderr) {
         console.log('stdout: ' + stdout);
@@ -34,11 +34,11 @@ Wrapper.prototype.status = function () {
         }
     });
 
-}
+};
 
-exports.status = Wrapper.prototype.status();
+
 
 module.exports = function() {
-    return wrapper._init("/home/leo/handle-casperjs/daemon-handle/build/daemon");
+    return Wrapper.prototype._init("/home/leo/handle-casperjs/daemon-handle/build/daemon");
 };
 
