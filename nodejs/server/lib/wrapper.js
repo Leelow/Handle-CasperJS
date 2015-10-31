@@ -24,7 +24,7 @@ Wrapper.prototype._init = function(daemonPath) {
  * Get the status of the daemon
  * @public
  */
-exports.status = Wrapper.prototype.status = function () {
+Wrapper.prototype.status = function () {
 
     exec(this.daemonPath + ' status', function(error, stdout, stderr) {
         console.log('stdout: ' + stdout);
@@ -36,6 +36,17 @@ exports.status = Wrapper.prototype.status = function () {
 
 };
 
-module.exports = function() {
+exports.status = function() {
+    exec(this.daemonPath + ' status', function(error, stdout, stderr) {
+        console.log('stdout: ' + stdout);
+        //console.log('stderr: ' + stderr);
+        if (error !== null) {
+            console.log('exec error: ' + error);
+        }
+    });
+}
+
+    module.exports = function() {
     return wrapper._init("/home/leo/handle-casperjs/daemon-handle/build/daemon");
 };
+
