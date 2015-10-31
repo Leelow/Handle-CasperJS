@@ -22,6 +22,7 @@ Wrapper.prototype._init = function(daemonPath) {
 
 /**
  * Get the status of the daemon
+ * @public
  */
 Wrapper.prototype.status = function () {
 
@@ -37,4 +38,4 @@ Wrapper.prototype.status = function () {
 
 module.exports = function() {
     return wrapper._init("/home/leo/handle-casperjs/daemon-handle/build/daemon");
-}; 
+};
