@@ -36,15 +36,7 @@ Wrapper.prototype.status = function () {
 
 };
 
-exports.status = function() {
-    exec(this.daemonPath + ' status', function(error, stdout, stderr) {
-        console.log('stdout: ' + stdout);
-        //console.log('stderr: ' + stderr);
-        if (error !== null) {
-            console.log('exec error: ' + error);
-        }
-    });
-}
+exports.status = Wrapper.status();
 
     module.exports = function() {
     return wrapper._init("/home/leo/handle-casperjs/daemon-handle/build/daemon");
