@@ -18,7 +18,7 @@ function Wrapper() {
 Wrapper.prototype._init = function(daemonPath) {
     this.daemonPath = daemonPath;
     return this;
-};
+}
 
 /**
  * Get the status of the daemon
@@ -34,11 +34,11 @@ Wrapper.prototype.status = function () {
         }
     });
 
-};
+}
 
-exports.status = Wrapper.status();
+exports.status = Wrapper.prototype.status();
 
-    module.exports = function() {
+module.exports = function() {
     return wrapper._init("/home/leo/handle-casperjs/daemon-handle/build/daemon");
 };
 
