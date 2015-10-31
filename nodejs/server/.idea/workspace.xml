@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="f799948b-2e69-4847-8d87-7d17a20494c9" name="Default" comment="">
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/daemon.io.js" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/wrapper.js" />
       <change type="DELETED" beforePath="F:\dev-github\Handle-CasperJS\nodejs\server\node_modules\express\History.md" afterPath="" />
       <change type="DELETED" beforePath="F:\dev-github\Handle-CasperJS\nodejs\server\node_modules\express\LICENSE" afterPath="" />
       <change type="DELETED" beforePath="F:\dev-github\Handle-CasperJS\nodejs\server\node_modules\express\Readme.md" afterPath="" />
@@ -1204,6 +1203,7 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/utf8/utf8.js" afterPath="$PROJECT_DIR$/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/utf8/utf8.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/node_modules/socket.io/node_modules/engine.io/lib/transports/websocket.js" afterPath="$PROJECT_DIR$/node_modules/socket.io/node_modules/engine.io/lib/transports/websocket.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/websocket.js" afterPath="$PROJECT_DIR$/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/lib/transports/websocket.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/lib/wrapper.js" afterPath="$PROJECT_DIR$/lib/wrapper.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/lib/xmlhttprequest.js" afterPath="$PROJECT_DIR$/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/lib/xmlhttprequest.js" />
     </list>
     <ignored path="server.iws" />
@@ -1226,10 +1226,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="server.js" pinned="false" current-in-tab="true">
+      <file leaf-file-name="server.js" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/server.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.22921348">
+            <state vertical-scroll-proportion="0.0">
               <caret line="12" column="3" selection-start-line="12" selection-start-column="3" selection-end-line="12" selection-end-column="3" />
               <folding />
             </state>
@@ -1246,11 +1246,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="wrapper.js" pinned="false" current-in-tab="false">
+      <file leaf-file-name="wrapper.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/wrapper.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0">
-              <caret line="39" column="2" selection-start-line="39" selection-start-column="2" selection-end-line="39" selection-end-column="2" />
+            <state vertical-scroll-proportion="0.7449438">
+              <caret line="39" column="3" selection-start-line="39" selection-start-column="3" selection-end-line="39" selection-end-column="3" />
               <folding />
             </state>
           </provider>
@@ -1271,8 +1271,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/lib/wrapper.js" />
         <option value="$PROJECT_DIR$/server.js" />
+        <option value="$PROJECT_DIR$/lib/wrapper.js" />
       </list>
     </option>
   </component>
@@ -1430,6 +1430,14 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/server.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="12" column="3" selection-start-line="12" selection-start-column="3" selection-end-line="12" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/lib/daemon.io.js">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -1440,16 +1448,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/wrapper.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0">
-          <caret line="39" column="2" selection-start-line="39" selection-start-column="2" selection-end-line="39" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/server.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.22921348">
-          <caret line="12" column="3" selection-start-line="12" selection-start-column="3" selection-end-line="12" selection-end-column="3" />
+        <state vertical-scroll-proportion="0.7449438">
+          <caret line="39" column="3" selection-start-line="39" selection-start-column="3" selection-end-line="39" selection-end-column="3" />
           <folding />
         </state>
       </provider>
