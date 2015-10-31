@@ -5,15 +5,8 @@ var wrapper = require("./lib/wrapper.js");
 
 var port = 8080;
 
-//daemonIO.start();
-
-var test = function(wrapper) {
-
-    wrapper.status();
-
-}
 
 http.listen(port, function(){
     console.log('Server started on *:' + port);
-    test(wrapper);
+    wrapper.status();
 });
