@@ -24,7 +24,7 @@ Wrapper.prototype._init = function(daemonPath) {
  * Get the status of the daemon
  * @public
  */
-exports.status = Wrapper.prototype.status = function () {
+Wrapper.prototype.status = function () {
 
     exec(this.daemonPath + ' status', function(error, stdout, stderr) {
         console.log('stdout: ' + stdout);
