@@ -9,4 +9,5 @@ var port = 8080;
 
 http.listen(port, function(){
     console.log('Server started on *:' + port);
+    wrapper.status();
 });
